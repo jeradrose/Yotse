@@ -13,9 +13,24 @@
 		6055C52E2B64CCE0C8499578 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6055CD73DDB3E228E55A5008 /* GameScene.swift */; };
 		6055C58BCCFB47E36EDD5485 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6055C318CE248C57FEAAC3C1 /* AppDelegate.swift */; };
 		6055CD7732327E06FA5E05BD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6055CFB4DE2D038E006D104A /* Main.storyboard */; };
+		6055CDD18CDFD4827C260A19 /* Dice.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 6055C2A2EC17C4A8A5CBCF93 /* Dice.atlas */; };
 		6055CE53AD02D3E6AD05C5F7 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6055C915D8984F73A3F672E1 /* LaunchScreen.xib */; };
 		6055CEB6939652D577649A89 /* YotseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6055C083781D244E2878A0BF /* YotseTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		FD7DF8051AC791DB00E630C1 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.atlas";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"${DERIVED_FILE_DIR}/${INPUT_FILE_BASE}.atlasc",
+			);
+			script = "${DEVELOPER_TOOLS_DIR}/../usr/bin/TextureAtlas ${INPUT_FILE_PATH} ${DERIVED_FILE_DIR}";
+		};
+/* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
 		6055C4395E620FC1D42814B9 /* PBXContainerItemProxy */ = {
@@ -31,6 +46,7 @@
 		6055C083781D244E2878A0BF /* YotseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YotseTests.swift; sourceTree = "<group>"; };
 		6055C0C8A41ADE9F7702B8ED /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
 		6055C2236648C32B34E54EC9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		6055C2A2EC17C4A8A5CBCF93 /* Dice.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = Dice.atlas; sourceTree = "<group>"; };
 		6055C318CE248C57FEAAC3C1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6055C42B155F1A8D716B100E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		6055C69A4C45EE63BC9198A1 /* YotseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YotseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				6055CFCB7A4BC3360AAC18C7 /* Info.plist */,
+				6055C2A2EC17C4A8A5CBCF93 /* Dice.atlas */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -130,6 +147,7 @@
 				6055C454F506925BF4106E69 /* Resources */,
 			);
 			buildRules = (
+				FD7DF8051AC791DB00E630C1 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -191,6 +209,7 @@
 				6055CE53AD02D3E6AD05C5F7 /* LaunchScreen.xib in Resources */,
 				6055CD7732327E06FA5E05BD /* Main.storyboard in Resources */,
 				6055C4F2AA529D87546FF45D /* GameScene.sks in Resources */,
+				6055CDD18CDFD4827C260A19 /* Dice.atlas in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
