@@ -9,10 +9,10 @@
             <objects>
                 <viewController id="BV1-FR-VrT" customClass="GameViewController" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="maK-i9-Uhn"/>
-                        <viewControllerLayoutGuide type="bottom" id="khH-OB-KpY"/>
+                        <viewControllerLayoutGuide type="top" id="5ar-Zm-t8W"/>
+                        <viewControllerLayoutGuide type="bottom" id="e59-Lg-e1i"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="3se-qz-xqx" customClass="SKView">
+                    <view key="view" id="3se-qz-xqx" customClass="SKView">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
