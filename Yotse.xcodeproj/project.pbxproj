@@ -12,6 +12,7 @@
 		6055C4F2AA529D87546FF45D /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 6055C0C8A41ADE9F7702B8ED /* GameScene.sks */; };
 		6055C52E2B64CCE0C8499578 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6055CD73DDB3E228E55A5008 /* GameScene.swift */; };
 		6055C58BCCFB47E36EDD5485 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6055C318CE248C57FEAAC3C1 /* AppDelegate.swift */; };
+		6055C65F2982409C501D690A /* GameMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6055CB813A164C5BAA70CEBD /* GameMode.swift */; };
 		6055CD7732327E06FA5E05BD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6055CFB4DE2D038E006D104A /* Main.storyboard */; };
 		6055CDD18CDFD4827C260A19 /* Dice.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 6055C2A2EC17C4A8A5CBCF93 /* Dice.atlas */; };
 		6055CE53AD02D3E6AD05C5F7 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6055C915D8984F73A3F672E1 /* LaunchScreen.xib */; };
@@ -52,6 +53,7 @@
 		6055C69A4C45EE63BC9198A1 /* YotseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YotseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6055C72EE4AD9DA590B28522 /* Yotse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Yotse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6055C963E80044894C5208D3 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
+		6055CB813A164C5BAA70CEBD /* GameMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameMode.swift; sourceTree = "<group>"; };
 		6055CD21FE59E38F3CFB3FE2 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		6055CD73DDB3E228E55A5008 /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		6055CDB425EEF6726BD10E0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
@@ -87,6 +89,7 @@
 				6055C0C8A41ADE9F7702B8ED /* GameScene.sks */,
 				6055CD73DDB3E228E55A5008 /* GameScene.swift */,
 				6055C963E80044894C5208D3 /* GameViewController.swift */,
+				6055CB813A164C5BAA70CEBD /* GameMode.swift */,
 			);
 			path = Yotse;
 			sourceTree = "<group>";
@@ -180,7 +183,7 @@
 		6055C784E2DDBE121DF14158 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				ORGANIZATIONNAME = "___FULLUSERNAME___";
+				ORGANIZATIONNAME = "Brain Freeze Logic";
 			};
 			buildConfigurationList = 6055CF4C1EBE58828DC1FF2B /* Build configuration list for PBXProject "Yotse" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -230,6 +233,7 @@
 				6055C58BCCFB47E36EDD5485 /* AppDelegate.swift in Sources */,
 				6055C52E2B64CCE0C8499578 /* GameScene.swift in Sources */,
 				6055C37CCFEC2F554EFC2A57 /* GameViewController.swift in Sources */,
+				6055C65F2982409C501D690A /* GameMode.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

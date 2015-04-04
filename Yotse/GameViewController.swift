@@ -3,7 +3,7 @@
 //  Yotse
 //
 //  Created by Jerad Rose on 3/18/15.
-//  Copyright (c) 2015 Jerad Rose. All rights reserved.
+//  Copyright (c) 2015 Brain Freeze Logic. All rights reserved.
 //
 
 import UIKit

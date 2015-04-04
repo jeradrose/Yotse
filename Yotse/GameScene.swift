@@ -3,61 +3,83 @@
 //  Yotse
 //
 //  Created by Jerad Rose on 3/18/15.
-//  Copyright (c) 2015 Jerad Rose. All rights reserved.
+//  Copyright (c) 2015 Brain Freeze Logic. All rights reserved.
 //
 
 import SpriteKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
-    let textureAtlas = SKTextureAtlas(named: "Dice")
+    let textureAtlas = SKTextureAtlas()
+    let diceWidth = Double(0)
+    let restitution = CGFloat(0.7)
+    let friction = CGFloat(0.15)
+    let linearDamping = CGFloat(0.0)
+    let gravity = CGFloat(-50.0)
+
+    var dice = [SKSpriteNode]()
+    var gameMode = GameMode.Classic
+
+    required init?(coder aDecoder: NSCoder) {
+        textureAtlas = SKTextureAtlas(named: "Dice")
+        diceWidth = Double(SKSpriteNode(imageNamed:"Dice_1").size.width)
+
+        super.init(coder: aDecoder)
+    }
 
     override func didMoveToView(view: SKView) {
         self.backgroundColor = UIColor.whiteColor()
         self.physicsBody = SKPhysicsBody(edgeLoopFromRect: self.frame)
-        self.physicsWorld.gravity = CGVectorMake(0.0, -5)
 
-        println(self.physicsWorld.speed)
-        self.physicsWorld.speed = 4.0
-    }
+        println("gravity: \(self.physicsWorld.gravity.dx), \(self.physicsWorld.gravity.dy)")
+        self.physicsWorld.gravity = CGVectorMake(0.0, gravity)
 
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
-        for touch: AnyObject in touches {
-            addDice(touch.locationInNode(self))
+        let spacing = Double(self.size.width / 5)
+        let offset = (spacing / 2)
+
+        println("offset: \(offset), diceWidth: \(diceWidth), spacing: \(spacing)")
+
+        for i in 0..<5 {
+            dice.append(addDice(CGPoint(x: (spacing * Double(i)) + offset, y: offset)))
         }
     }
 
-    func addDice(position: CGPoint) {
+    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+        for i in 0..<5 {
+            dice[i].removeActionForKey("roll")
+        }
+    }
+
+    func addDice(position: CGPoint) -> SKSpriteNode {
+        println("addDice(position.x: \(position.x), position.y: \(position.y))")
         let sprite = SKSpriteNode(imageNamed:"Dice_1")
 
         sprite.position = position
 
         sprite.physicsBody = SKPhysicsBody(texture: textureAtlas.textureNamed("Dice_1"), size: sprite.size)
-        sprite.physicsBody!.dynamic = true
-        println("density = \(sprite.physicsBody!.density)")
-        println("restitution = \(sprite.physicsBody!.restitution)")
-        println("friction = \(sprite.physicsBody!.friction)")
+        sprite.physicsBody!.dynamic = false
 
-        sprite.physicsBody!.mass = 500
-        sprite.physicsBody!.restitution = 0.5
-        sprite.physicsBody!.friction = 0.2
+        sprite.physicsBody!.restitution = restitution
+        sprite.physicsBody!.friction = friction
+        sprite.physicsBody!.linearDamping = linearDamping
 
-        let rollAction = SKAction.runBlock({
+        let roll = SKAction.runBlock({
             sprite.runAction(SKAction.setTexture(self.textureAtlas.textureNamed("Dice_\(self.rollDice())")))
         })
 
-        let roll = SKAction.group([rollAction])
         let wait = SKAction.waitForDuration(0.1)
 
         let sequence = SKAction.sequence([roll, wait])
         let repeat = SKAction.repeatActionForever(sequence)
-        sprite.runAction(repeat)
+
+        sprite.runAction(repeat, withKey: "roll")
 
         self.addChild(sprite)
 
+        return sprite
     }
 
     func rollDice() -> String {
-        let i = Int(arc4random_uniform(11)+1)
+        let i = Int(arc4random_uniform(gameMode == GameMode.Classic ? 6 : 11)+1)
 
         var dice = ""
 
