@@ -10,14 +10,17 @@ class Die : SKSpriteNode {
     let friction: CGFloat = 0.15
     let linearDamping: CGFloat = 0.0
 
-    let textureAtlas = SKTextureAtlas(named: "Dice")
+    let textureAtlas: SKTextureAtlas = SKTextureAtlas(named: "Dice")
 
     let diceValues = [1,2,3,4,5,6]
     let offset: CGFloat = 0.0
 
     let collisionBitMask: UInt32 = 0
 
-    var dragTrajectory = CGVector(dx: 0.0, dy: 0.0)
+    let minimumMagnitude: CGFloat = 500.0
+    let maximumMagnitude: CGFloat = 1500.0
+
+    var dragTrajectory: CGVector = CGVector(dx: 0.0, dy: 0.0)
     var slot = 0
 
     override init(texture: SKTexture!, color: SKColor!, size: CGSize) {
@@ -77,12 +80,21 @@ class Die : SKSpriteNode {
     }
 
     func startRoll() {
+        if dragTrajectory.magnitude < minimumMagnitude {
+            dragTrajectory = dragTrajectory.scaled(minimumMagnitude)
+        }
+
+        if dragTrajectory.magnitude > maximumMagnitude {
+            dragTrajectory = dragTrajectory.scaled(maximumMagnitude)
+        }
+
         physicsBody!.collisionBitMask = collisionBitMask
         physicsBody!.dynamic = true
         physicsBody!.friction = 0.0
         physicsBody!.restitution = 1.0
         physicsBody!.linearDamping = 0.0
         physicsBody!.applyImpulse(dragTrajectory)
+        physicsBody!.applyTorque(10)
         slot = 0
         runAction(getRollForever(), withKey: "roll")
     }
