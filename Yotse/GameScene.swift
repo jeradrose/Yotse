@@ -32,7 +32,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         diceTrayHeight = diceWidth + (offset * 2)
 
         for i in 0..<5 {
-            let die = Die(diceValues: [1,2,3,4,5,6], slot: i + 1, offset: offset)
+            let die: Die = Die(diceValues: [1,2,3,4,5,6], slot: i + 1, offset: offset)
+            die.zPosition = 1
             dice.append(die)
             addChild(die)
         }
@@ -45,6 +46,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func didMoveToView(view: SKView) {
         println("didMoveToView")
         backgroundColor = UIColor.whiteColor()
+
+        let diceTray: SKShapeNode = SKShapeNode(rectOfSize: CGSize(width: frame.size.width - offset, height: diceTrayHeight - offset), cornerRadius: 15.0)
+        diceTray.position = CGPoint(x: frame.size.width / 2, y: diceTrayHeight / 2)
+        diceTray.strokeColor = UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0)
+        diceTray.fillColor = UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 0.2)
+        diceTray.lineWidth = 3.0
+        diceTray.zPosition = 0
+        addChild(diceTray)
 
         println("frame: \(frame)")
 
