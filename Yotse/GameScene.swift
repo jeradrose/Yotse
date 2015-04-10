@@ -22,6 +22,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var canRoll = true
     var touchedDie: Die?
 
+    let dieCategory: UInt32 = 0x01;
+    let wallCategory: UInt32 = 0x02;
+
     override init(size: CGSize) {
         println("init(size)")
         super.init(size: size)
@@ -34,6 +37,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         for i in 0..<5 {
             let die: Die = Die(diceValues: [1,2,3,4,5,6], slot: i + 1, offset: offset)
             die.zPosition = 1
+            die.physicsBody!.categoryBitMask = dieCategory
+            die.physicsBody!.collisionBitMask = dieCategory | wallCategory
+            die.physicsBody!.contactTestBitMask = dieCategory | wallCategory
             dice.append(die)
             addChild(die)
         }
@@ -55,6 +61,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         diceTray.zPosition = 0
         addChild(diceTray)
 
+        physicsWorld.contactDelegate = self
+
         println("frame: \(frame)")
 
         let edgeOrigin = CGPoint(x: frame.origin.x, y: frame.origin.y + diceTrayHeight)
@@ -63,6 +71,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         println("edgeOrigin: \(edgeOrigin), edgeSize: \(edgeSize)")
 
         physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRect(origin: edgeOrigin, size: edgeSize))
+        physicsBody!.categoryBitMask = wallCategory
+        physicsBody!.collisionBitMask = wallCategory | dieCategory
 
         println("gravity: \(physicsWorld.gravity.dx), \(physicsWorld.gravity.dy)")
         disableGravity()
@@ -109,6 +119,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 }
 
                 touchedDie!.position = location
+            }
+        }
+    }
+
+    func didBeginContact(contact: SKPhysicsContact) {
+        if canRoll {
+            if contact.bodyA.categoryBitMask == dieCategory {
+                let die = contact.bodyA.node as Die
+                die.physicsBody!.velocity = die.enforceSpeed(die.physicsBody!.velocity) * 1.1
+            }
+            if contact.bodyB.categoryBitMask == dieCategory {
+                let die = contact.bodyB.node as Die
+                die.physicsBody!.velocity = die.enforceSpeed(die.physicsBody!.velocity) * 1.1
             }
         }
     }

@@ -80,23 +80,29 @@ class Die : SKSpriteNode {
     }
 
     func startRoll() {
-        if dragTrajectory.magnitude < minimumMagnitude {
-            dragTrajectory = dragTrajectory.scaled(minimumMagnitude)
-        }
-
-        if dragTrajectory.magnitude > maximumMagnitude {
-            dragTrajectory = dragTrajectory.scaled(maximumMagnitude)
-        }
-
         physicsBody!.collisionBitMask = collisionBitMask
         physicsBody!.dynamic = true
         physicsBody!.friction = 0.0
         physicsBody!.restitution = 1.0
         physicsBody!.linearDamping = 0.0
-        physicsBody!.applyImpulse(dragTrajectory)
+        physicsBody!.applyImpulse(enforceSpeed(dragTrajectory))
         physicsBody!.applyTorque(10)
         slot = 0
         runAction(getRollForever(), withKey: "roll")
+    }
+
+    func enforceSpeed(currentVelocity: CGVector) -> CGVector {
+        if currentVelocity.magnitude < minimumMagnitude {
+            println("speeding up to minimum")
+            return currentVelocity.scaled(minimumMagnitude)
+        }
+
+        if currentVelocity.magnitude > maximumMagnitude {
+            println("slowing down to maximum")
+            return currentVelocity.scaled(maximumMagnitude)
+        }
+
+        return currentVelocity
     }
 
     func stopRoll() {
