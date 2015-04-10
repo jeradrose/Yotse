@@ -9,56 +9,166 @@
 import SpriteKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
-    let gravity = CGFloat(-50.0)
-    let diceWidth = Double(0)
+    let normalGravity = CGVectorMake(0.0, -10.0)
+    let noGravity = CGVectorMake(0.0, 0.0)
+    let diceWidth: CGFloat = 0
+    let diceHalf: CGFloat = 0
 
-    var dice = [Die]()
+    let diceTrayHeight: CGFloat = 0
+    let offset: CGFloat = 0
+    let dice = [Die]()
+
     var gameMode = GameMode.Classic
-    var isRolling = false
+    var canRoll = true
+    var touchedDie: Die?
+
+    override init(size: CGSize) {
+        println("init(size)")
+        super.init(size: size)
+
+        diceWidth = SKSpriteNode(imageNamed:"Dice_1").size.width
+        diceHalf = diceWidth / 2
+        offset = (size.width - (diceWidth * 5)) / 6
+        diceTrayHeight = diceWidth + (offset * 2)
+
+        for i in 0..<5 {
+            let die = Die(diceValues: [1,2,3,4,5,6], slot: i + 1, offset: offset)
+            dice.append(die)
+            addChild(die)
+        }
+    }
 
     required init?(coder aDecoder: NSCoder) {
-        diceWidth = Double(SKSpriteNode(imageNamed:"Dice_1").size.width)
-
-        super.init(coder: aDecoder)
+        fatalError("NSCoder not supported")
     }
 
     override func didMoveToView(view: SKView) {
-        self.backgroundColor = UIColor.whiteColor()
-        self.physicsBody = SKPhysicsBody(edgeLoopFromRect: self.frame)
+        println("didMoveToView")
+        backgroundColor = UIColor.whiteColor()
 
-        println("gravity: \(self.physicsWorld.gravity.dx), \(self.physicsWorld.gravity.dy)")
-        self.physicsWorld.gravity = CGVectorMake(0.0, gravity)
+        println("frame: \(frame)")
 
-        let spacing = Double(self.size.width / 5)
-        let offset = (spacing / 2)
+        let edgeOrigin = CGPoint(x: frame.origin.x, y: frame.origin.y + diceTrayHeight)
+        let edgeSize = CGSize(width: frame.size.width, height: frame.size.height - diceTrayHeight)
 
-        println("offset: \(offset), diceWidth: \(diceWidth), spacing: \(spacing)")
+        println("edgeOrigin: \(edgeOrigin), edgeSize: \(edgeSize)")
 
-        for i in 0..<5 {
-            let die = Die(position: CGPoint(x: (spacing * Double(i)) + offset, y: offset), diceValues: [1,2,3,4,5,6])
+        physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRect(origin: edgeOrigin, size: edgeSize))
 
-            println("position = \(die.position)")
-            println("\(die.texture)")
+        println("gravity: \(physicsWorld.gravity.dx), \(physicsWorld.gravity.dy)")
+        disableGravity()
 
-            dice.append(die)
-            self.addChild(die)
-        }
+        println("offset: \(offset), diceWidth: \(diceWidth)")
     }
 
     override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
-        if isRolling {
-            for i in 0..<5 {
-                dice[i].stopRoll()
-            }
-        } else {
-            for i in 0..<5 {
-                dice[i].startRoll()
+        touchedDie = nil
+
+        for touch in touches {
+            let location = touch.locationInNode(self)
+            println("location: \(location)")
+            touchedDie = nodeAtPoint(location) as? Die
+            if touchedDie != nil && (touchedDie!.slot == 0 || !canRoll) {
+                touchedDie = nil
             }
         }
-        isRolling = !isRolling
+
+        if touchedDie == nil || touchedDie!.slot == 0 {
+            enableGravity()
+        }
     }
 
-    override func update(currentTime: CFTimeInterval) {
-        /* Called before each frame is rendered */
+    override func touchesMoved(touches: NSSet, withEvent event: UIEvent) {
+        if touchedDie != nil {
+            for touch in touches {
+                var location = touch.locationInNode(self)
+
+                let dx = (location.x - touchedDie!.position.x) * 10.0
+                let dy = (location.y - touchedDie!.position.y) * 10.0
+
+                touchedDie!.dragTrajectory = CGVector(dx: dx, dy: dy)
+//                println("dx: \(dx), dy:\(dy)")
+
+                if location.x < diceHalf {
+                    location.x = diceHalf
+                }
+                if location.x > size.width - diceHalf {
+                    location.x = size.width - diceHalf
+                }
+                if location.y > size.height - diceHalf {
+                    location.y = size.height - diceHalf
+                }
+
+                touchedDie!.position = location
+            }
+        }
+    }
+
+    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
+        if touchedDie != nil {
+            println("touchedDie!.position: \(touchedDie!.position)")
+            if touchedDie!.position.y > diceTrayHeight + diceHalf {
+                println("dragTrajectory: \(touchedDie!.dragTrajectory.dx), dy:\(touchedDie!.dragTrajectory.dy)")
+                touchedDie!.startRoll()
+            } else {
+                touchedDie!.moveToSlot(touchedDie!.slot)
+            }
+
+            touchedDie = nil
+        }
+    }
+
+    func disableGravity() {
+        canRoll = true
+        physicsWorld.gravity = noGravity
+        physicsBody!.friction = 0.0
+    }
+
+    func enableGravity() {
+        canRoll = false
+        physicsWorld.gravity = normalGravity
+        physicsBody!.friction = 0.15
+        for die in dice {
+            if die.slot == 0 {
+                die.stopRoll()
+            }
+        }
+
+        println("physicsBody!.friction \(physicsBody!.friction)")
+
+        NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: Selector("checkDice"), userInfo: nil, repeats: false)
+    }
+
+    func checkDice() {
+        var restCount = 0
+        for die in dice {
+            if die.resting() {
+                restCount++
+            }
+        }
+
+        println("restCount: \(restCount)")
+
+        if restCount == 5 {
+            for die in dice {
+                if die.slot == 0 {
+                    for i in 1...5 {
+                        var taken = false
+                        for die2 in dice {
+                            if die2.slot == i {
+                                taken = true
+                            }
+                        }
+                        if !taken {
+                            die.moveToSlot(i)
+                            break
+                        }
+                    }
+                }
+            }
+            disableGravity()
+        } else {
+            NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: Selector("checkDice"), userInfo: nil, repeats: false)
+        }
     }
 }

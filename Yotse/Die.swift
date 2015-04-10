@@ -6,13 +6,19 @@
 import SpriteKit
 
 class Die : SKSpriteNode {
-    let restitution = CGFloat(0.7)
-    let friction = CGFloat(0.15)
-    let linearDamping = CGFloat(0.0)
+    let restitution: CGFloat = 0.4
+    let friction: CGFloat = 0.15
+    let linearDamping: CGFloat = 0.0
 
     let textureAtlas = SKTextureAtlas(named: "Dice")
 
     let diceValues = [1,2,3,4,5,6]
+    let offset: CGFloat = 0.0
+
+    let collisionBitMask: UInt32 = 0
+
+    var dragTrajectory = CGVector(dx: 0.0, dy: 0.0)
+    var slot = 0
 
     override init(texture: SKTexture!, color: SKColor!, size: CGSize) {
         super.init(texture: texture, color: color, size: size)
@@ -22,28 +28,40 @@ class Die : SKSpriteNode {
         super.init(coder: aDecoder)
     }
 
-    init(position: CGPoint, diceValues: [Int]) {
-        println("new Die: position: \(position), diceValues: \(diceValues)")
-        self.diceValues = diceValues
-
+    init(diceValues: [Int], slot: Int, offset: CGFloat) {
         super.init()
 
-        self.texture = SKTexture(imageNamed: "Dice_1")
-        self.size = self.texture!.size()
+        self.diceValues = diceValues
+        self.offset = offset
 
-        self.position = position
+        texture = SKTexture(imageNamed: "Dice_1")
+        size = texture!.size()
 
-        println("texture: \(self.texture)")
-        println("size: \(self.size)")
+        physicsBody = SKPhysicsBody(texture: texture, size: size)
+        collisionBitMask = physicsBody!.collisionBitMask
 
-        self.physicsBody = SKPhysicsBody(texture: self.texture, size: self.size)
+        println("collisionBitMask: \(collisionBitMask)")
 
-        println("physicsBody: \(self.physicsBody)")
+        physicsBody!.restitution = restitution
+        physicsBody!.friction = friction
+        physicsBody!.linearDamping = linearDamping
 
-        self.physicsBody!.dynamic = false
-        self.physicsBody!.restitution = restitution
-        self.physicsBody!.friction = friction
-        self.physicsBody!.linearDamping = linearDamping
+        moveToSlot(slot)
+    }
+
+    func moveToSlot(slot: Int) {
+        self.slot = slot
+
+        println("slot: \(slot)")
+        let center = size.width / 2
+        let start = offset + size.width
+        let y = center + offset
+        let x = (start * CGFloat(slot)) - center
+
+        physicsBody!.dynamic = false
+        physicsBody!.collisionBitMask = 0
+        runAction(SKAction.moveTo(CGPoint(x: x, y: y), duration: 0.25))
+        zRotation = 0.0
     }
 
     func getRollForever() -> SKAction {
@@ -59,27 +77,54 @@ class Die : SKSpriteNode {
     }
 
     func startRoll() {
-        self.runAction(getRollForever(), withKey: "roll")
+        physicsBody!.collisionBitMask = collisionBitMask
+        physicsBody!.dynamic = true
+        physicsBody!.friction = 0.0
+        physicsBody!.restitution = 1.0
+        physicsBody!.linearDamping = 0.0
+        physicsBody!.applyImpulse(dragTrajectory)
+        slot = 0
+        runAction(getRollForever(), withKey: "roll")
     }
 
     func stopRoll() {
-        self.removeActionForKey("roll")
+        removeActionForKey("roll")
+        physicsBody!.friction = friction
+        physicsBody!.restitution = restitution
+        physicsBody!.linearDamping = linearDamping
+        
+        println("die.friction: \(physicsBody!.friction), die.restitution: \(physicsBody!.restitution), die.linearDamping = \(physicsBody!.linearDamping)")
+    }
+
+    func speed(velocity: CGVector) -> Float
+    {
+        let dx = Float(velocity.dx);
+        let dy = Float(velocity.dy);
+        return sqrtf(dx*dx+dy*dy)
+    }
+
+    func angularSpeed(velocity: CGFloat) -> Float
+    {
+        return abs(Float(velocity))
+    }
+
+    // This is a more reliable test for a physicsBody at "rest"
+    func resting() -> Bool
+    {
+        return (speed(physicsBody!.velocity) < 0.0001
+                && angularSpeed(physicsBody!.angularVelocity) < 0.0001)
     }
 
     func rollDie() -> String {
         let i = diceValues[Int(arc4random_uniform(UInt32(diceValues.count)))]
 
-        var dice = ""
-
         switch i {
-            case 7:  dice = "Y"
-            case 8:  dice = "O"
-            case 9:  dice = "T"
-            case 10: dice = "S"
-            case 11: dice = "E"
-            default: dice = String(i)
+            case 7:  return "Y"
+            case 8:  return "O"
+            case 9:  return "T"
+            case 10: return "S"
+            case 11: return "E"
+            default: return String(i)
         }
-
-        return dice
     }
 }
