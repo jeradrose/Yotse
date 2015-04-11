@@ -16,7 +16,7 @@ class GameViewController: UIViewController {
         println("GameViewController.viewDidLoad")
         super.viewDidLoad()
 
-        let skView = self.view as SKView
+        let skView = self.view as! SKView
         skView.multipleTouchEnabled = false
 
         //skView.showsFPS = true

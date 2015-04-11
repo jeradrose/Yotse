@@ -4,46 +4,43 @@
 //
 
 import SpriteKit
+import UIKit
 
 class Die : SKSpriteNode {
     let restitution: CGFloat = 0.4
     let friction: CGFloat = 0.15
     let linearDamping: CGFloat = 0.0
-
-    let textureAtlas: SKTextureAtlas = SKTextureAtlas(named: "Dice")
-
-    let diceValues = [1,2,3,4,5,6]
-    let offset: CGFloat = 0.0
-
-    let collisionBitMask: UInt32 = 0
-
     let minimumMagnitude: CGFloat = 500.0
     let maximumMagnitude: CGFloat = 1500.0
+    let textureAtlas: SKTextureAtlas = SKTextureAtlas(named: "Dice")
+
+    let diceValues: [Int]
+    let offset: CGFloat
 
     var dragTrajectory: CGVector = CGVector(dx: 0.0, dy: 0.0)
     var slot = 0
 
     override init(texture: SKTexture!, color: SKColor!, size: CGSize) {
+        diceValues = []
+        offset = 0
         super.init(texture: texture, color: color, size: size)
     }
 
     required init?(coder aDecoder: NSCoder) {
+        diceValues = []
+        offset = 0
         super.init(coder: aDecoder)
     }
 
     init(diceValues: [Int], slot: Int, offset: CGFloat) {
-        super.init()
-
         self.diceValues = diceValues
         self.offset = offset
 
-        texture = SKTexture(imageNamed: "Dice_1")
-        size = texture!.size()
+        let texture = SKTexture(imageNamed: "Dice_1")
+
+        super.init(texture: texture, color: UIColor.whiteColor(), size: texture!.size())
 
         physicsBody = SKPhysicsBody(texture: texture, size: size)
-        collisionBitMask = physicsBody!.collisionBitMask
-
-        println("collisionBitMask: \(collisionBitMask)")
 
         physicsBody!.restitution = restitution
         physicsBody!.friction = friction
@@ -62,7 +59,6 @@ class Die : SKSpriteNode {
         let x = (start * CGFloat(slot)) - center
 
         physicsBody!.dynamic = false
-        physicsBody!.collisionBitMask = 0
         runAction(SKAction.moveTo(CGPoint(x: x, y: y), duration: 0.25))
         zRotation = 0.0
     }
@@ -80,7 +76,6 @@ class Die : SKSpriteNode {
     }
 
     func startRoll() {
-        physicsBody!.collisionBitMask = collisionBitMask
         physicsBody!.dynamic = true
         physicsBody!.friction = 0.0
         physicsBody!.restitution = 1.0

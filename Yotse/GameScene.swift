@@ -7,16 +7,17 @@
 //
 
 import SpriteKit
+import UIKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     let normalGravity = CGVectorMake(0.0, -10.0)
     let noGravity = CGVectorMake(0.0, 0.0)
-    let diceWidth: CGFloat = 0
-    let diceHalf: CGFloat = 0
+    let diceWidth: CGFloat
+    let diceHalf: CGFloat
 
-    let diceTrayHeight: CGFloat = 0
-    let offset: CGFloat = 0
-    let dice = [Die]()
+    let diceTrayHeight: CGFloat
+    let offset: CGFloat
+    var dice = [Die]()
 
     var gameMode = GameMode.Classic
     var canRoll = true
@@ -27,12 +28,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     override init(size: CGSize) {
         println("init(size)")
-        super.init(size: size)
 
         diceWidth = SKSpriteNode(imageNamed:"Dice_1").size.width
         diceHalf = diceWidth / 2
         offset = (size.width - (diceWidth * 5)) / 6
         diceTrayHeight = diceWidth + (offset * 2)
+
+        super.init(size: size)
 
         for i in 0..<5 {
             let die: Die = Die(diceValues: [1,2,3,4,5,6], slot: i + 1, offset: offset)
@@ -80,10 +82,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         println("offset: \(offset), diceWidth: \(diceWidth)")
     }
 
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
         touchedDie = nil
 
-        for touch in touches {
+        for touch in touches as! Set<UITouch> {
             let location = touch.locationInNode(self)
             println("location: \(location)")
             touchedDie = nodeAtPoint(location) as? Die
@@ -97,9 +99,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
 
-    override func touchesMoved(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesMoved(touches: Set<NSObject>, withEvent event: UIEvent) {
         if touchedDie != nil {
-            for touch in touches {
+            for touch in touches as! Set<UITouch> {
                 var location = touch.locationInNode(self)
 
                 let dx = (location.x - touchedDie!.position.x) * 10.0
@@ -126,17 +128,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func didBeginContact(contact: SKPhysicsContact) {
         if canRoll {
             if contact.bodyA.categoryBitMask == dieCategory {
-                let die = contact.bodyA.node as Die
+                let die = contact.bodyA.node as! Die
                 die.physicsBody!.velocity = die.enforceSpeed(die.physicsBody!.velocity) * 1.1
             }
             if contact.bodyB.categoryBitMask == dieCategory {
-                let die = contact.bodyB.node as Die
+                let die = contact.bodyB.node as! Die
                 die.physicsBody!.velocity = die.enforceSpeed(die.physicsBody!.velocity) * 1.1
             }
         }
     }
 
-    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
         if touchedDie != nil {
             println("touchedDie!.position: \(touchedDie!.position)")
             if touchedDie!.position.y > diceTrayHeight + diceHalf {
