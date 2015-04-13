@@ -18,7 +18,7 @@ class Die : SKSpriteNode {
     let offset: CGFloat
 
     var dragTrajectory: CGVector = CGVector(dx: 0.0, dy: 0.0)
-    var slot = 0
+    var slot: Int = 0
 
     override init(texture: SKTexture!, color: SKColor!, size: CGSize) {
         diceValues = []
@@ -63,6 +63,10 @@ class Die : SKSpriteNode {
         zRotation = 0.0
     }
 
+    func rollOnce() {
+        self.runAction(SKAction.setTexture(self.textureAtlas.textureNamed("Dice_\(self.rollDie())")))
+    }
+
     func getRollForever() -> SKAction {
         let rollAction = SKAction.runBlock({
             self.runAction(SKAction.setTexture(self.textureAtlas.textureNamed("Dice_\(self.rollDie())")))
@@ -83,17 +87,17 @@ class Die : SKSpriteNode {
         physicsBody!.applyImpulse(enforceSpeed(dragTrajectory))
         physicsBody!.applyTorque(10)
         slot = 0
-        runAction(getRollForever(), withKey: "roll")
+//        runAction(getRollForever(), withKey: "roll")
     }
 
     func enforceSpeed(currentVelocity: CGVector) -> CGVector {
         if currentVelocity.magnitude < minimumMagnitude {
-            println("speeding up to minimum")
+//            println("speeding up to minimum")
             return currentVelocity.scaled(minimumMagnitude)
         }
 
         if currentVelocity.magnitude > maximumMagnitude {
-            println("slowing down to maximum")
+//            println("slowing down to maximum")
             return currentVelocity.scaled(maximumMagnitude)
         }
 
@@ -101,7 +105,7 @@ class Die : SKSpriteNode {
     }
 
     func stopRoll() {
-        removeActionForKey("roll")
+//        removeActionForKey("roll")
         physicsBody!.friction = friction
         physicsBody!.restitution = restitution
         physicsBody!.linearDamping = linearDamping
