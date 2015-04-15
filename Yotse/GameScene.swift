@@ -57,6 +57,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
 
     override func didMoveToView(view: SKView) {
+        super.didMoveToView(view)
+
+        let swipeDown: UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: "respondToSwipeGesture:")
+        swipeDown.direction = UISwipeGestureRecognizerDirection.Down
+        self.view!.addGestureRecognizer(swipeDown)
+
         println("didMoveToView")
         backgroundColor = UIColor.whiteColor()
 
@@ -74,6 +80,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsBody!.collisionBitMask = wallCategory | dieCategory
 
         disableGravity()
+    }
+
+    func respondToSwipeGesture(gesture: UIGestureRecognizer) {
+        if let swipeGesture = gesture as? UISwipeGestureRecognizer {
+            switch swipeGesture.direction {
+                case UISwipeGestureRecognizerDirection.Down:
+                    if canRoll {
+                        enableGravity()
+                    }
+                default:
+                    break
+            }
+        }
     }
 
     override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
@@ -94,10 +113,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         println("canRoll: \(canRoll)")
         if touchedDie != nil && !canRoll {
             disableGravity()
-        }
-
-        if touchedDie == nil && canRoll {
-            enableGravity()
         }
     }
 
