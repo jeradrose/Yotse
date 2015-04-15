@@ -133,17 +133,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if touchedDie!.position.y > self.diceTray.size.height + diceHalf {
 //                println("dragTrajectory: \(touchedDie!.dragTrajectory.dx), dy:\(touchedDie!.dragTrajectory.dy)")
                 touchedDie!.startRoll()
+
+                lockedDice[slot] = nil
+                println("lockedDice[\(touchedDie!.slot)]: \(lockedDice[touchedDie!.slot])")
+                rollingDice.append(touchedDie!)
+
+                if rollNumber == 1 {
+
+                }
             } else {
                 touchedDie!.moveToSlot(touchedDie!.slot)
             }
 
-            lockedDice[slot] = nil
-            println("lockedDice[\(touchedDie!.slot)]: \(lockedDice[touchedDie!.slot])")
-            rollingDice.append(touchedDie!)
-
-            if rollNumber == 1 {
-
-            }
 
             touchedDie = nil
         }
