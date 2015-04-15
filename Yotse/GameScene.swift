@@ -15,7 +15,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let diceWidth: CGFloat
     let diceHalf: CGFloat
 
-    let diceTrayHeight: CGFloat
     let offset: CGFloat
     var lockedDice = [Int: Die?]()
     var rollingDice = [Die]()
@@ -28,13 +27,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let dieCategory: UInt32 = 0x01;
     let wallCategory: UInt32 = 0x02;
 
+    let diceTray: SKSpriteNode
+
     override init(size: CGSize) {
         println("init(size)")
 
         diceWidth = SKSpriteNode(imageNamed:"Dice_1").size.width
         diceHalf = diceWidth / 2
         offset = (size.width - (diceWidth * 5)) / 6
-        diceTrayHeight = diceWidth + (offset * 2)
+
+        let diceTrayTexture: SKTexture = SKTexture(imageNamed: "DiceTray")
+        diceTray = SKSpriteNode(texture: diceTrayTexture, size: CGSize(width: size.width, height: (size.width * diceTrayTexture.size().height) / diceTrayTexture.size().width))
 
         super.init(size: size)
 
@@ -57,18 +60,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         println("didMoveToView")
         backgroundColor = UIColor.whiteColor()
 
-        let diceTray: SKShapeNode = SKShapeNode(rectOfSize: CGSize(width: frame.size.width - offset, height: diceTrayHeight - offset), cornerRadius: 15.0)
-        diceTray.position = CGPoint(x: frame.size.width / 2, y: diceTrayHeight / 2)
-        diceTray.strokeColor = UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0)
-//        diceTray.fillColor = UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 0.2)
-        diceTray.lineWidth = 4.0
+        diceTray.position = CGPoint(x: frame.size.width / 2, y: diceTray.size.height / 2)
         diceTray.zPosition = 0
         addChild(diceTray)
 
         physicsWorld.contactDelegate = self
 
-        let edgeOrigin = CGPoint(x: frame.origin.x, y: frame.origin.y + diceTrayHeight)
-        let edgeSize = CGSize(width: frame.size.width, height: frame.size.height - diceTrayHeight)
+        let edgeOrigin = CGPoint(x: frame.origin.x, y: frame.origin.y + diceTray.size.height)
+        let edgeSize = CGSize(width: frame.size.width, height: frame.size.height - diceTray.size.height)
 
         physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRect(origin: edgeOrigin, size: edgeSize))
         physicsBody!.categoryBitMask = wallCategory
@@ -131,7 +130,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if touchedDie != nil {
             let slot = touchedDie!.slot
 //            println("touchedDie!.position: \(touchedDie!.position)")
-            if touchedDie!.position.y > diceTrayHeight + diceHalf {
+            if touchedDie!.position.y > self.diceTray.size.height + diceHalf {
 //                println("dragTrajectory: \(touchedDie!.dragTrajectory.dx), dy:\(touchedDie!.dragTrajectory.dy)")
                 touchedDie!.startRoll()
             } else {
