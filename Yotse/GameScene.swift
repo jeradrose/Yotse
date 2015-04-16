@@ -16,8 +16,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let diceHalf: CGFloat
 
     let offset: CGFloat
-    var lockedDice = [Int: Die?]()
-    var rollingDice = [Die]()
+    var lockedDice: [Int: Die?] = [Int: Die?]()
+    var rollingDice: [Die] = [Die]()
+
+    var trayDice: [SKSpriteNode] = [SKSpriteNode]()
 
     var gameMode = GameMode.Classic
     var canRoll = true
@@ -28,6 +30,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let wallCategory: UInt32 = 0x02;
 
     let diceTray: SKSpriteNode
+
+    let trayDiceAtlas: SKTextureAtlas = SKTextureAtlas(named: "TrayDice")
+
 
     override init(size: CGSize) {
         println("init(size)")
@@ -40,6 +45,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         diceTray = SKSpriteNode(texture: diceTrayTexture, size: CGSize(width: size.width, height: (size.width * diceTrayTexture.size().height) / diceTrayTexture.size().width))
 
         super.init(size: size)
+
+        let trayDiceWidth: CGFloat = diceWidth / 3
+        let trayDiceTop: CGFloat = diceTray.size.height - trayDiceWidth
+        let trayDiceXStart: CGFloat = (size.width / 2) - (trayDiceWidth * 1.5)
+        let trayDiceOffset: CGFloat = (trayDiceWidth * 1.5)
+
+        println("trayDiceWidth: \(trayDiceWidth)")
+        println("trayDiceTop: \(trayDiceTop)")
+        println("trayDiceXStart: \(trayDiceXStart)")
+        println("trayDiceOffset: \(trayDiceOffset)")
+
+        for i in 0...2 {
+            trayDice.append(SKSpriteNode(imageNamed: "TrayDice_\(i+1)"))
+            trayDice[i].size = CGSize(width: trayDiceWidth, height: trayDiceWidth)
+            trayDice[i].position = CGPoint(x: trayDiceXStart + (trayDiceOffset * CGFloat(i)), y: trayDiceTop)
+            println("trayDice[\(i)].size: \(trayDice[i].size)")
+            println("trayDice[\(i)].position: \(trayDice[i].position)")
+            trayDice[i].zPosition = 1
+            addChild(trayDice[i])
+        }
 
         for i in 1...5 {
             let die: Die = Die(diceValues: [1,2,3,4,5,6], slot: i, offset: offset)
@@ -63,12 +88,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         swipeDown.direction = UISwipeGestureRecognizerDirection.Down
         self.view!.addGestureRecognizer(swipeDown)
 
-        println("didMoveToView")
-        backgroundColor = UIColor.whiteColor()
-
         diceTray.position = CGPoint(x: frame.size.width / 2, y: diceTray.size.height / 2)
         diceTray.zPosition = 0
         addChild(diceTray)
+
+        println("didMoveToView")
+        backgroundColor = UIColor.whiteColor()
 
         physicsWorld.contactDelegate = self
 
