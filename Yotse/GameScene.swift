@@ -171,6 +171,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let slot = touchedDie!.slot
 //            println("touchedDie!.position: \(touchedDie!.position)")
             if touchedDie!.position.y > self.diceTray.size.height + diceHalf {
+//                if rollingDice.count == 0 {
+//                    nextRoll()
+//                }
 //                println("dragTrajectory: \(touchedDie!.dragTrajectory.dx), dy:\(touchedDie!.dragTrajectory.dy)")
                 touchedDie!.startRoll()
 
@@ -232,6 +235,37 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: Selector("checkDice"), userInfo: nil, repeats: false)
     }
 
+    func endRoll() {
+        for die: Die in rollingDice {
+            for i in 1 ... 5 {
+                println("lockedDice[\(i)]: \(lockedDice[i])")
+                if lockedDice[i] == nil {
+                    lockedDice[i] = die
+                    die.moveToSlot(i)
+                    break
+                }
+            }
+        }
+        rollingDice.removeAll()
+        canRoll = true
+        nextRoll()
+        println("diceStopped")
+    }
+
+    func nextRoll() {
+        rollNumber++
+        if (rollNumber > 3) {
+            rollNumber = 1
+        }
+
+        println("rollNumber: \(rollNumber)")
+
+        for i in 1...3 {
+            let transparent = rollNumber > i ? "_Transparent" : ""
+            trayDice[i - 1].runAction(SKAction.setTexture(trayDiceAtlas.textureNamed("TrayDice_\(i)\(transparent)")))
+        }
+    }
+
     func checkDice() {
         var restCount = 0
         for die: Die in rollingDice {
@@ -243,19 +277,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         println("restCount: \(restCount)")
 
         if restCount == rollingDice.count {
-            for die: Die in rollingDice {
-                for i in 1 ... 5 {
-                    println("lockedDice[\(i)]: \(lockedDice[i])")
-                    if lockedDice[i] == nil {
-                        lockedDice[i] = die
-                        die.moveToSlot(i)
-                        break
-                    }
-                }
-            }
-            rollingDice.removeAll()
-            canRoll = true
-            println("diceStopped")
+            endRoll()
         } else {
             NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: Selector("checkDice"), userInfo: nil, repeats: false)
         }
