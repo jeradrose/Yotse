@@ -20,6 +20,8 @@ class Die : SKSpriteNode {
     var dragTrajectory: CGVector = CGVector(dx: 0.0, dy: 0.0)
     var slot: Int = 0
 
+    var actions: DieActions?
+
     override init(texture: SKTexture!, color: SKColor!, size: CGSize) {
         diceValues = []
         offset = 0
@@ -49,6 +51,55 @@ class Die : SKSpriteNode {
         moveToSlot(slot)
     }
 
+    var state: DieState = DieState.Locked {
+        willSet {
+            switch newValue {
+                case DieState.Dragging:
+                    if state == DieState.Locked {
+                        return
+                    }
+                case DieState.Rolling:
+                    if state == DieState.Dragging {
+                        return
+                    }
+                case DieState.Dropping:
+                    if state == DieState.Rolling {
+                        return
+                    }
+                case DieState.Resting:
+                    if state == DieState.Dropping {
+                        return
+                    }
+                case DieState.Locking:
+                    if state == DieState.Resting || state == DieState.Dragging {
+                        return
+                    }
+                case DieState.Locked:
+                    if state == DieState.Locking {
+                        return
+                    }
+            }
+            fatalError("DieState for slot \(slot) cannot be set from \(state.description) to \(newValue.description).")
+        }
+        didSet {
+            println("Changing Die[\(slot)].state from \(oldValue.description) to \(state.description)")
+            switch state {
+                case DieState.Dragging:
+                    return
+                case DieState.Rolling:
+                    actions?.Roll(slot)
+                case DieState.Dropping:
+                    actions?.Drop(slot)
+                case DieState.Resting:
+                    actions?.Rest(slot)
+                case DieState.Locking:
+                    actions?.Lock(slot)
+                case DieState.Locked:
+                    return
+            }
+        }
+    }
+
     func moveToSlot(slot: Int) {
         self.slot = slot
 
@@ -56,7 +107,7 @@ class Die : SKSpriteNode {
         let center = size.width / 2
         let start = offset + size.width
         let y = center + offset
-        let x = (start * CGFloat(slot)) - center
+        let x = (start * CGFloat(slot + 1)) - center
 
         physicsBody!.dynamic = false
         runAction(SKAction.moveTo(CGPoint(x: x, y: y), duration: 0.25))
@@ -79,14 +130,21 @@ class Die : SKSpriteNode {
         return SKAction.repeatActionForever(sequenceAction)
     }
 
+    func setDynamic(dynamic: Bool) {
+        if dynamic {
+            physicsBody!.dynamic = true
+            physicsBody!.friction = 0.0
+            physicsBody!.restitution = 1.0
+            physicsBody!.linearDamping = 0.0
+        } else {
+            physicsBody!.dynamic = false
+        }
+    }
+
     func startRoll() {
-        physicsBody!.dynamic = true
-        physicsBody!.friction = 0.0
-        physicsBody!.restitution = 1.0
-        physicsBody!.linearDamping = 0.0
+        println("startRoll()")
         physicsBody!.applyImpulse(enforceSpeed(dragTrajectory))
         physicsBody!.applyTorque(10)
-        slot = 0
 //        runAction(getRollForever(), withKey: "roll")
     }
 
@@ -106,10 +164,10 @@ class Die : SKSpriteNode {
 
     func stopRoll() {
 //        removeActionForKey("roll")
+
         physicsBody!.friction = friction
         physicsBody!.restitution = restitution
         physicsBody!.linearDamping = linearDamping
-        
         println("die.friction: \(physicsBody!.friction), die.restitution: \(physicsBody!.restitution), die.linearDamping = \(physicsBody!.linearDamping)")
     }
 
