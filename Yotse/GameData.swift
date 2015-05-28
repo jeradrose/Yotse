@@ -6,7 +6,7 @@
 import Foundation
 
 class GameData {
-    var currentRoll: Int = 1
+    var currentRoll: Int = 0
     var maxRoll: Int = 3
     var gameMode: GameMode = GameMode.Classic
     var dieState: [DieState] = [DieState.Locked, DieState.Locked, DieState.Locked, DieState.Locked, DieState.Locked]
@@ -21,7 +21,7 @@ class GameData {
 
     func score() {
         turn++
-        currentRoll = 1
+        currentRoll = 0
         gameState = GameState.WaitingToRoll
     }
 
@@ -31,7 +31,7 @@ class GameData {
                 case GameState.BeginningGame:
                     return
                 case GameState.WaitingToRoll:
-                    if (gameState == GameState.WaitingToScoreOrRoll || gameState == GameState.BeginningGame) {
+                    if (gameState == GameState.WaitingToScore || gameState == GameState.WaitingToScoreOrRoll || gameState == GameState.BeginningGame) {
                         return;
                     }
                 case GameState.RollingDice:
@@ -63,9 +63,13 @@ class GameData {
                 case GameState.BeginningGame:
                     return
                 case GameState.WaitingToRoll:
+                    gameActions.NextRoll()
                     gameActions.OpenBorder()
                     gameActions.JoinDice()
                 case GameState.RollingDice:
+                    if (oldValue == GameState.WaitingToScoreOrRoll) {
+                        gameActions.NextRoll()
+                    }
                     gameActions.SplitDice()
                     gameActions.CloseBorder()
                     gameActions.DeactivateGravity()

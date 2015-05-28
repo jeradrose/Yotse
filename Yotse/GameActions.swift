@@ -15,5 +15,6 @@ protocol GameActions {
     func SplitDice()
     func LockDice()
     func MakeDiceStatic()
+    func NextRoll()
     func NextTurn()
 }

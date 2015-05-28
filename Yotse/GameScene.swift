@@ -76,7 +76,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
             addChild(trayDice[i])
         }
 
-        data?.gameState = GameState.WaitingToRoll
+        data!.gameState = GameState.WaitingToRoll
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -107,16 +107,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
             let location = touch.locationInNode(self)
             println("location: \(location)")
             touchedDie = nodeAtPoint(location) as? Die
-            if touchedDie != nil && (touchedDie!.state == DieState.Rolling ||
-                    (data?.gameState != GameState.RollingDice &&
-                     data?.gameState != GameState.WaitingToRoll &&
-                     data?.gameState != GameState.WaitingToScoreOrRoll)) {
+            if touchedDie != nil && touchedDie!.state == DieState.Rolling {
+                println("touchedDie is in invalid state to roll")
+                touchedDie = nil
+            }
+
+            if touchedDie != nil &&
+                    data!.gameState != GameState.RollingDice &&
+                    data!.gameState != GameState.WaitingToRoll &&
+                    data!.gameState != GameState.WaitingToScoreOrRoll {
+                println("gameState is in invalid state (\(data!.gameState.description) to roll")
                 touchedDie = nil
             }
         }
 
         if touchedDie != nil {
             touchedDie?.state = DieState.Dragging
+        }
+
+        if data!.gameState == GameState.WaitingToScore {
+            data!.score()
         }
     }
 
@@ -149,45 +159,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
         if touchedDie != nil {
             let slot = touchedDie!.slot
 
-//            if data?.currentRoll == 1 {
-//                var isOutOfBounds: Bool = false
-//                let minY = self.diceTray.size.height + diceHalf
-//
-//                for i in 1...5 {
-//                    if lockedDice[i]!.position.y <= minY {
-//                        isOutOfBounds = true
-//                    }
-//                }
-//
-//                if !isOutOfBounds {
-//                    for i in 1...5 {
-//                        let die: Die = lockedDice[i]!
-//                        die.startRoll()
-//                        lockedDice[i] = nil
-//                        println("lockedDice[\(touchedDie!.slot)]: \(lockedDice[touchedDie!.slot])")
-//                        rollingDice.append(die)
-//                    }
-//                } else {
-//                    for i in 1 ... 5 {
-//                        lockedDice[i]!.moveToSlot(i)
-//                    }
-//                }
-//            } else {
-                if touchedDie!.position.y > self.diceTray.size.height + diceHalf {
-                    data!.gameState = GameState.RollingDice
-                    touchedDie!.state = DieState.Rolling
-                } else {
-                    for die: Die in dice {
-                        if die.state == DieState.Rolling {
-                            data!.gameState = GameState.RollingDice
-                        }
+            if touchedDie!.position.y > self.diceTray.size.height + diceHalf {
+                data!.gameState = GameState.RollingDice
+                touchedDie!.state = DieState.Rolling
+            } else {
+                for die: Die in dice {
+                    if die.state == DieState.Rolling {
+                        data!.gameState = GameState.RollingDice
                     }
-                    if data!.gameState != GameState.RollingDice {
-                        data!.gameState = GameState.WaitingToRoll
-                    }
-                    touchedDie!.state = DieState.Locking
                 }
-//            }
+                if data!.gameState != GameState.RollingDice && data!.gameState != GameState.WaitingToRoll {
+                    data!.gameState = GameState.WaitingToRoll
+                }
+                touchedDie!.state = DieState.Locking
+            }
 
             touchedDie = nil
         }
@@ -197,7 +182,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
         if let swipeGesture = gesture as? UISwipeGestureRecognizer {
             switch swipeGesture.direction {
             case UISwipeGestureRecognizerDirection.Down:
-                data?.gameState = GameState.DiceComingToRest
+                if data!.gameState == GameState.RollingDice {
+                    data!.gameState = GameState.DiceComingToRest
+                }
             default:
                 break
             }
@@ -210,7 +197,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
             if (die.speed(die.physicsBody!.velocity) > 60) {
                 die.rollOnce()
             }
-            if data?.gameState == GameState.RollingDice {
+            if data!.gameState == GameState.RollingDice {
                 die.physicsBody!.velocity = die.enforceSpeed(die.physicsBody!.velocity) * 1.1
             }
         }
@@ -219,7 +206,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
             if (die.speed(die.physicsBody!.velocity) > 60) {
                 die.rollOnce()
             }
-            if data?.gameState == GameState.RollingDice {
+            if data!.gameState == GameState.RollingDice {
                 die.physicsBody!.velocity = die.enforceSpeed(die.physicsBody!.velocity) * 1.1
             }
         }
@@ -240,7 +227,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
             }
         }
 
-        data?.gameState = GameState.DiceMovingToTray
+        data!.gameState = GameState.DiceMovingToTray
 
         for die: Die in dice {
             println("die[\(die.slot)].state = \(die.state.description)")
@@ -249,19 +236,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
             }
         }
 
-        if (data?.currentRoll == data?.maxRoll) {
-            data?.gameState = GameState.WaitingToScore
+        if (data!.currentRoll == data!.maxRoll) {
+            data!.gameState = GameState.WaitingToScore
         } else {
-            data?.gameState = GameState.WaitingToScoreOrRoll
+            data!.gameState = GameState.WaitingToScoreOrRoll
         }
+    }
+
+    func NextRoll() {
+        println("begin NextRoll()")
+        data!.currentRoll++
+        for i in 1...data!.maxRoll {
+            let transparent = data!.currentRoll != i ? "_Transparent" : ""
+            trayDice[i - 1].runAction(SKAction.setTexture(trayDiceAtlas.textureNamed("TrayDice_\(i)\(transparent)")))
+        }
+        println("data!.currentRoll: \(data!.currentRoll)")
+        println("end NextRoll()")
     }
 
     func NextTurn() {
         println("begin NextTurn()")
-        for i in 1...3 {
-            let transparent = data?.currentRoll > i ? "_Transparent" : ""
-            trayDice[i - 1].runAction(SKAction.setTexture(trayDiceAtlas.textureNamed("TrayDice_\(i)\(transparent)")))
-        }
         println("end NextTurn()")
     }
 
@@ -281,12 +275,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
 
     func OpenBorder() {
         println("begin OpenBorder()")
-//        let edgeOrigin = CGPoint(x: frame.origin.x, y: frame.origin.y + diceTray.size.height)
-//        let edgeSize = CGSize(width: frame.size.width, height: frame.size.height)
-//
-//        physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRect(origin: edgeOrigin, size: edgeSize))
-//        physicsBody!.categoryBitMask = wallCategory
-//        physicsBody!.collisionBitMask = wallCategory | dieCategory
+        let edgeOrigin = CGPoint(x: frame.origin.x, y: frame.origin.y + diceTray.size.height)
+        let edgeSize = CGSize(width: frame.size.width, height: frame.size.height)
+
+        physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRect(origin: edgeOrigin, size: edgeSize))
+        physicsBody!.categoryBitMask = wallCategory
+        physicsBody!.collisionBitMask = wallCategory | dieCategory
         println("end OpenBorder()")
     }
 
@@ -330,10 +324,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
 
     func JoinDice() {
         println("begin JoinDice()")
-//        for i in 0 ... 3 {
-//            let joint = SKPhysicsJointSpring.jointWithBodyA(dice[i].physicsBody, bodyB: dice[i + 1].physicsBody, anchorA: dice[i].position, anchorB: dice[i + 1].position)
-//            self.physicsWorld.addJoint(joint)
-//        }
+        for i in 0 ... 3 {
+            let joint = SKPhysicsJointSpring.jointWithBodyA(dice[i].physicsBody, bodyB: dice[i + 1].physicsBody, anchorA: dice[i].position, anchorB: dice[i + 1].position)
+            self.physicsWorld.addJoint(joint)
+        }
         println("end JoinDice()")
     }
 
