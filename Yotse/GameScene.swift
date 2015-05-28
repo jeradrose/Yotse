@@ -28,6 +28,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
     var dice: [Die] = Array<Die>(count: 5, repeatedValue: Die())
     var touchedDie: Die?
 
+    //let player: SoundPlayer = SoundPlayer()
+
     override init(size: CGSize) {
         println("init(size)")
 
