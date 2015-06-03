@@ -162,7 +162,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
                 }
 
                 touchedDie!.position = location
-                println("touchedDie!.position: \(touchedDie!.position.x), \(touchedDie!.position.y)")
+//                println("touchedDie!.position: \(touchedDie!.position.x), \(touchedDie!.position.y)")
             }
         }
     }
@@ -171,13 +171,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
         if touchedDie != nil {
             if touchedDie!.position.y > self.diceTray.size.height + diceHalf {
                 if data!.currentRoll == 1 && data!.gameState == GameState.WaitingToRoll {
+                    data!.gameState = GameState.RollingDice
                     for die: Die in dice {
                         die.state = DieState.Rolling
                     }
                 } else {
+                    data!.gameState = GameState.RollingDice
                     touchedDie!.state = DieState.Rolling
                 }
-                data!.gameState = GameState.RollingDice
             } else {
                 for die: Die in dice {
                     if die.state == DieState.Rolling {
@@ -187,7 +188,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
                 if data!.gameState != GameState.RollingDice && data!.gameState != GameState.WaitingToRoll {
                     data!.gameState = GameState.WaitingToRoll
                 }
-                touchedDie!.state = DieState.Locking
+                if data!.currentRoll == 1 && data!.gameState == GameState.WaitingToRoll {
+                    for die: Die in dice {
+                        die.state = DieState.Locking
+                    }
+                } else {
+                    touchedDie!.state = DieState.Locking
+                }
             }
 
             touchedDie = nil
@@ -291,8 +298,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
 
     func OpenBorder() {
         println("begin OpenBorder()")
-        let edgeOrigin = CGPoint(x: frame.origin.x - (diceWidth * 2), y: frame.origin.y - (diceWidth * 2))
-        let edgeSize = CGSize(width: frame.size.width + (diceWidth * 4), height: frame.size.height + (diceWidth * 4))
+//        let edgeOrigin = CGPoint(x: frame.origin.x - (diceWidth * 2), y: frame.origin.y - (diceWidth * 2))
+//        let edgeSize = CGSize(width: frame.size.width + (diceWidth * 4), height: frame.size.height + (diceWidth * 4))
+        let edgeSize = CGSize(width: frame.size.width, height: frame.size.height)
+        let edgeOrigin = CGPoint(x: frame.origin.x, y: frame.origin.y)
 
 //        physicsBody = SKPhysicsBody()
 
@@ -304,7 +313,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
 
     func CloseBorder() {
         println("begin CloseBorder()")
-        let edgeOrigin = CGPoint(x: frame.origin.x, y: frame.origin.y + diceTray.size.height)
+
+        let edgeOrigin: CGPoint = CGPoint(x: frame.origin.x, y: frame.origin.y + diceTray.size.height)
+        let minDicePosition: CGPoint = CGPoint(x: edgeOrigin.x + diceHalf, y: edgeOrigin.y + diceHalf)
+        let maxDicePosition: CGPoint = CGPoint(x: frame.size.width - diceHalf, y: frame.size.height - diceHalf)
+
+        for die: Die in dice {
+            if die.state == DieState.Dragging {
+                var newPosition: CGPoint = die.position
+                if die.position.x < minDicePosition.x {
+                    newPosition.x = minDicePosition.x
+                }
+                if die.position.y < minDicePosition.y {
+                    newPosition.y = minDicePosition.y
+                }
+                if die.position.x > maxDicePosition.x {
+                    newPosition.x = maxDicePosition.x
+                }
+                if die.position.y > maxDicePosition.y {
+                    newPosition.y = maxDicePosition.y
+                }
+
+                if die.position != newPosition {
+                    die.moveToPosition(newPosition)
+                }
+            }
+        }
+
         let edgeSize = CGSize(width: frame.size.width, height: frame.size.height - diceTray.size.height)
 
         physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRect(origin: edgeOrigin, size: edgeSize))

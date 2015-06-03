@@ -118,6 +118,10 @@ class Die : SKSpriteNode {
         runAction(SKAction.rotateToAngle(0, duration: 0.25))
     }
 
+    func moveToPosition(position: CGPoint) {
+        runAction(SKAction.moveTo(CGPoint(x: position.x, y: position.y), duration: 0.25))
+    }
+
     func rollOnce() {
         self.runAction(SKAction.setTexture(self.textureAtlas.textureNamed("Dice_\(self.rollDie())")))
     }
