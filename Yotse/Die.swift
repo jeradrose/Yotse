@@ -19,6 +19,7 @@ class Die : SKSpriteNode {
 
     var dragTrajectory: CGVector = CGVector(dx: 0.0, dy: 0.0)
     var slot: Int = 0
+    var homePosition: CGPoint = CGPoint(x: 0, y: 0)
 
     var actions: DieActions?
 
@@ -48,7 +49,17 @@ class Die : SKSpriteNode {
         physicsBody!.friction = friction
         physicsBody!.linearDamping = linearDamping
 
-        moveToSlot(slot)
+        let center = size.width / 2
+        let start = offset + size.width
+        let y = center + offset
+        let x = (start * CGFloat(slot + 1)) - center
+
+        self.slot = slot
+        self.homePosition = CGPoint(x: x, y: y)
+
+        self.setDynamic(false)
+
+        self.position = homePosition
     }
 
     var state: DieState = DieState.Locked {
@@ -85,6 +96,7 @@ class Die : SKSpriteNode {
             println("Changing Die[\(slot)].state from \(oldValue.description) to \(state.description)")
             switch state {
                 case DieState.Dragging:
+                    actions?.DragOtherDice(slot)
                     return
                 case DieState.Rolling:
                     actions?.Roll(slot)
@@ -100,18 +112,10 @@ class Die : SKSpriteNode {
         }
     }
 
-    func moveToSlot(slot: Int) {
-        self.slot = slot
-
-        println("slot: \(slot)")
-        let center = size.width / 2
-        let start = offset + size.width
-        let y = center + offset
-        let x = (start * CGFloat(slot + 1)) - center
-
-        physicsBody!.dynamic = false
-        runAction(SKAction.moveTo(CGPoint(x: x, y: y), duration: 0.25))
-        zRotation = 0.0
+    func moveToHome() {
+        self.setDynamic(false)
+        runAction(SKAction.moveTo(CGPoint(x: homePosition.x, y: homePosition.y), duration: 0.25))
+        runAction(SKAction.rotateToAngle(0, duration: 0.25))
     }
 
     func rollOnce() {

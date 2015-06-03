@@ -19,9 +19,9 @@ class GameViewController: UIViewController {
         let skView = self.view as! SKView
         skView.multipleTouchEnabled = false
 
-        //skView.showsFPS = true
-        //skView.showsNodeCount = true
-        //skView.showsPhysics = true
+        skView.showsFPS = true
+        skView.showsNodeCount = true
+        skView.showsPhysics = true
 
         let width = CGFloat(480)
         let height = skView.bounds.size.height * (width / skView.bounds.size.width)

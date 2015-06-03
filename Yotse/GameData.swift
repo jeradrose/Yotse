@@ -25,34 +25,38 @@ class GameData {
         gameState = GameState.WaitingToRoll
     }
 
-    var gameState: GameState = GameState.BeginningGame {
+    var gameState: GameState = GameState.Initialized {
         willSet {
             switch newValue {
+                case GameState.Initialized:
+                    return;
                 case GameState.BeginningGame:
-                    return
+                    if (gameState == GameState.Initialized) {
+                        return
+                    }
                 case GameState.WaitingToRoll:
                     if (gameState == GameState.WaitingToScore || gameState == GameState.WaitingToScoreOrRoll || gameState == GameState.BeginningGame) {
-                        return;
+                        return
                     }
                 case GameState.RollingDice:
                     if (gameState == GameState.WaitingToRoll || gameState == GameState.WaitingToScoreOrRoll || gameState == GameState.RollingDice) {
-                        return;
+                        return
                     }
                 case GameState.DiceComingToRest:
                     if (gameState == GameState.RollingDice) {
-                        return;
+                        return
                     }
                 case GameState.DiceMovingToTray:
                     if (gameState == GameState.DiceComingToRest) {
-                        return;
+                        return
                     }
                 case GameState.WaitingToScoreOrRoll:
                     if (gameState == GameState.DiceMovingToTray) {
-                        return;
+                        return
                     }
                 case GameState.WaitingToScore:
                     if (gameState == GameState.DiceMovingToTray) {
-                        return;
+                        return
                     }
             }
             fatalError("GameState cannot be set from \(gameState.description) to \(newValue.description).")
@@ -60,8 +64,11 @@ class GameData {
         didSet {
             println("Changing GameData.state from \(oldValue.description) to \(gameState.description)")
             switch gameState {
-                case GameState.BeginningGame:
+                case GameState.Initialized:
                     return
+                case GameState.BeginningGame:
+                    gameActions.OpenBorder()
+                    gameActions.ActivateGravity()
                 case GameState.WaitingToRoll:
                     gameActions.NextRoll()
                     gameActions.OpenBorder()

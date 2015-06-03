@@ -6,6 +6,7 @@
 import Foundation
 
 protocol DieActions {
+    func DragOtherDice(Int)
     func Lock(Int)
     func Rest(Int)
     func Drop(Int)

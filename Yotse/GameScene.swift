@@ -40,6 +40,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
         let diceTrayTexture: SKTexture = SKTexture(imageNamed: "DiceTray")
         diceTray = SKSpriteNode(texture: diceTrayTexture, size: CGSize(width: size.width, height: (size.width * diceTrayTexture.size().height) / diceTrayTexture.size().width))
 
+        // Initialize dice
         for i in 0...4 {
             let die: Die = Die(diceValues: [1,2,3,4,5,6], slot: i, offset: offset)
             die.zPosition = 1
@@ -77,8 +78,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
             trayDice[i].zPosition = 1
             addChild(trayDice[i])
         }
-
-        data!.gameState = GameState.WaitingToRoll
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -100,6 +99,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
         backgroundColor = UIColor.whiteColor()
 
         physicsWorld.contactDelegate = self
+
+        data!.gameState = GameState.BeginningGame
+
+        data!.gameState = GameState.WaitingToRoll
     }
 
     override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
@@ -124,7 +127,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
         }
 
         if touchedDie != nil {
-            touchedDie?.state = DieState.Dragging
+            if data!.currentRoll == 1 && data!.gameState == GameState.WaitingToRoll {
+                for die: Die in dice {
+                    die.state = DieState.Dragging
+                }
+            } else {
+                touchedDie?.state = DieState.Dragging
+            }
         }
 
         if data!.gameState == GameState.WaitingToScore {
@@ -153,17 +162,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
                 }
 
                 touchedDie!.position = location
+                println("touchedDie!.position: \(touchedDie!.position.x), \(touchedDie!.position.y)")
             }
         }
     }
 
     override func touchesEnded(touches: Set<NSObject>, withEvent event: UIEvent) {
         if touchedDie != nil {
-            let slot = touchedDie!.slot
-
             if touchedDie!.position.y > self.diceTray.size.height + diceHalf {
+                if data!.currentRoll == 1 && data!.gameState == GameState.WaitingToRoll {
+                    for die: Die in dice {
+                        die.state = DieState.Rolling
+                    }
+                } else {
+                    touchedDie!.state = DieState.Rolling
+                }
                 data!.gameState = GameState.RollingDice
-                touchedDie!.state = DieState.Rolling
             } else {
                 for die: Die in dice {
                     if die.state == DieState.Rolling {
@@ -277,8 +291,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
 
     func OpenBorder() {
         println("begin OpenBorder()")
-        let edgeOrigin = CGPoint(x: frame.origin.x, y: frame.origin.y + diceTray.size.height)
-        let edgeSize = CGSize(width: frame.size.width, height: frame.size.height)
+        let edgeOrigin = CGPoint(x: frame.origin.x - (diceWidth * 2), y: frame.origin.y - (diceWidth * 2))
+        let edgeSize = CGSize(width: frame.size.width + (diceWidth * 4), height: frame.size.height + (diceWidth * 4))
+
+//        physicsBody = SKPhysicsBody()
 
         physicsBody = SKPhysicsBody(edgeLoopFromRect: CGRect(origin: edgeOrigin, size: edgeSize))
         physicsBody!.categoryBitMask = wallCategory
@@ -325,12 +341,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
     }
 
     func JoinDice() {
-        println("begin JoinDice()")
-        for i in 0 ... 3 {
-            let joint = SKPhysicsJointSpring.jointWithBodyA(dice[i].physicsBody, bodyB: dice[i + 1].physicsBody, anchorA: dice[i].position, anchorB: dice[i + 1].position)
-            self.physicsWorld.addJoint(joint)
+        if data!.currentRoll == 1 && data!.gameState == GameState.WaitingToRoll {
+            println("begin JoinDice()")
+            for i in 0 ... 3 {
+                println("joining {\(i)} @ \(dice[i].homePosition.x), \(dice[i].homePosition.y) to {\(i+1)} @ \(dice[i+1].homePosition.x), \(dice[i+1].homePosition.y)")
+                let joint = SKPhysicsJointLimit.jointWithBodyA(dice[i].physicsBody, bodyB: dice[i + 1].physicsBody, anchorA: dice[i].homePosition, anchorB: dice[i + 1].homePosition)
+                self.physicsWorld.addJoint(joint)
+            }
+            println("end JoinDice()")
         }
-        println("end JoinDice()")
     }
 
     func SplitDice() {
@@ -341,13 +360,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate, GameActions, DieActions {
 
     func MakeDiceStatic() {
         println("begin MakeDiceStatic()")
-
         println("end MakeDiceStatic()")
+    }
+
+    func DragOtherDice(slot: Int) {
+        if data!.currentRoll == 1 && slot == touchedDie!.slot && data!.gameState == GameState.WaitingToRoll {
+            println("begin DragOtherDice()")
+            for i in 0...4 {
+                if i != slot {
+                    dice[i].setDynamic(true)
+                }
+            }
+            println("end DragOtherDice()")
+        }
     }
 
     func Lock(i: Int) {
         println("begin Lock(\(i))")
-        dice[i].moveToSlot(i)
+        dice[i].moveToHome()
         dice[i].state = DieState.Locked
         println("end Lock(\(i))")
     }

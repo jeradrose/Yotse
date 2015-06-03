@@ -6,6 +6,7 @@
 import Foundation
 
 enum GameState {
+    case Initialized
     case BeginningGame
     case WaitingToRoll
     case RollingDice
@@ -16,6 +17,7 @@ enum GameState {
 
     var description: String {
         switch (self) {
+        case Initialized: return "Initialized"
         case BeginningGame: return "BeginningGame"
         case WaitingToRoll: return "WaitingToRoll"
         case RollingDice: return "RollingDice"
